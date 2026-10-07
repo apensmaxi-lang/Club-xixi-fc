@@ -1,0 +1,20 @@
+{% extends 'jugadoresapp/base.html' %}
+{% block titulo %}Editar jugador · Club Deportivo{% endblock %}
+{% block contenido %}
+<h2 class="mb-1">Editar jugador</h2>
+<p class="suave">Modificando los datos de {{ jugador.nombre_completo }} (dorsal {{ jugador.dorsal }}).</p>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <form method="post" class="panel p-4" novalidate>
+      {% csrf_token %}
+      {% include 'jugadoresapp/_campos.html' %}
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-club btn-lg"><i class="bi bi-check-lg"></i> Guardar cambios</button>
+        <a href="{% url 'jugadoresapp:lista' %}" class="btn btn-outline-dark btn-lg">Cancelar</a>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-4">{% include 'jugadoresapp/_previa.html' %}</div>
+</div>
+{% endblock %}
+{% block scripts %}{% include 'jugadoresapp/_previa_js.html' %}{% endblock %}

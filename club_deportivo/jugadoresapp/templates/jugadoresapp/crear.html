@@ -1,0 +1,19 @@
+{% extends 'jugadoresapp/base.html' %}
+{% block titulo %}Fichar jugador · Club Deportivo{% endblock %}
+{% block contenido %}
+<h2 class="mb-3">Fichar jugador</h2>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <form method="post" class="panel p-4" novalidate>
+      {% csrf_token %}
+      {% include 'jugadoresapp/_campos.html' %}
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-club btn-lg"><i class="bi bi-check-lg"></i> Guardar jugador</button>
+        <a href="{% url 'jugadoresapp:lista' %}" class="btn btn-outline-dark btn-lg">Cancelar</a>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-4">{% include 'jugadoresapp/_previa.html' %}</div>
+</div>
+{% endblock %}
+{% block scripts %}{% include 'jugadoresapp/_previa_js.html' %}{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'jugadoresapp/base.html' %}
+{% block titulo %}{{ jugador.nombre_completo }} · Club Deportivo{% endblock %}
+{% block contenido %}
+<div class="panel ficha overflow-hidden mx-auto" style="max-width: 760px;">
+  <div class="ficha-cabecera">
+    <div class="grande">{{ jugador.dorsal }}</div>
+    <div>
+      <h2 class="mb-1 text-white">{{ jugador.nombre_completo }}</h2>
+      <div style="color:#bcd2c6">{{ jugador.get_posicion_display }}, {{ jugador.edad }} años</div>
+      <span class="insignia activo mt-2 d-inline-block">Pierna {{ jugador.get_pierna_buena_display|lower }}</span>
+    </div>
+  </div>
+  <dl class="row p-4 mb-0">
+    <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">{{ jugador.nombre }}</dd>
+    <dt class="col-sm-4">Apellido</dt><dd class="col-sm-8">{{ jugador.apellido }}</dd>
+    <dt class="col-sm-4">Dorsal</dt><dd class="col-sm-8">{{ jugador.dorsal }}</dd>
+    <dt class="col-sm-4">Edad</dt><dd class="col-sm-8">{{ jugador.edad }} años</dd>
+    <dt class="col-sm-4">Altura</dt><dd class="col-sm-8">{{ jugador.altura_cm }} cm</dd>
+    <dt class="col-sm-4">Peso</dt><dd class="col-sm-8">{{ jugador.peso_kg|floatformat:1 }} kg</dd>
+    <dt class="col-sm-4">Posición</dt><dd class="col-sm-8">{{ jugador.get_posicion_display }}</dd>
+    <dt class="col-sm-4">Pierna buena</dt><dd class="col-sm-8">{{ jugador.get_pierna_buena_display }}</dd>
+  </dl>
+  <div class="px-4 pb-4 d-flex gap-2 flex-wrap">
+    <a href="{% url 'jugadoresapp:lista' %}" class="btn btn-outline-dark">Volver al plantel</a>
+    <a href="{% url 'jugadoresapp:editar' jugador.pk %}" class="btn btn-club">Editar</a>
+    <a href="{% url 'jugadoresapp:eliminar' jugador.pk %}" class="btn btn-outline-danger">Eliminar</a>
+  </div>
+</div>
+{% endblock %}

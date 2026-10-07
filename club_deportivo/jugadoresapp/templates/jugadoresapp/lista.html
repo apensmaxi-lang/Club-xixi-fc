@@ -1,0 +1,77 @@
+{% extends 'jugadoresapp/base.html' %}
+{% block titulo %}Plantel · Club Deportivo{% endblock %}
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <h2 class="mb-0">Plantel <span class="suave fs-4">({{ pagina.paginator.count }})</span></h2>
+  <a href="{% url 'jugadoresapp:crear' %}" class="btn btn-club"><i class="bi bi-plus-lg"></i> Fichar jugador</a>
+</div>
+
+<form method="get" class="panel filtros row g-2 mx-0 mb-3">
+  <div class="col-lg-4"><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por nombre o apellido" aria-label="Buscar"></div>
+  <div class="col-6 col-lg-2">
+    <select name="posicion" class="form-select" aria-label="Posición">
+      <option value="">Toda posición</option>
+      {% for valor, etiqueta in posiciones %}<option value="{{ valor }}" {% if valor == posicion %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <select name="pierna" class="form-select" aria-label="Pierna buena">
+      <option value="">Toda pierna</option>
+      {% for valor, etiqueta in piernas %}<option value="{{ valor }}" {% if valor == pierna %}selected{% endif %}>Pierna {{ etiqueta|lower }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <select name="orden" class="form-select" aria-label="Ordenar por">
+      {% for valor, etiqueta in ordenes %}<option value="{{ valor }}" {% if valor == orden %}selected{% endif %}>Orden: {{ etiqueta }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2 d-grid d-flex gap-2">
+    <button class="btn btn-club flex-grow-1">Aplicar</button>
+    <a href="{% url 'jugadoresapp:lista' %}" class="btn btn-outline-dark" title="Limpiar filtros" aria-label="Limpiar filtros"><i class="bi bi-x-lg"></i></a>
+  </div>
+</form>
+
+<div class="panel overflow-hidden">
+<div class="table-responsive">
+<table class="table tabla-club align-middle">
+  <thead>
+    <tr><th class="ps-3">Dorsal</th><th>Jugador</th><th>Posición</th><th>Edad</th><th>Altura</th><th>Peso</th><th>Pierna buena</th><th class="text-end pe-3">Acciones</th></tr>
+  </thead>
+  <tbody>
+  {% for j in pagina %}
+    <tr>
+      <td class="ps-3"><span class="camiseta">{{ j.dorsal }}</span></td>
+      <td><a href="{% url 'jugadoresapp:detalle' j.pk %}" class="fw-bold text-decoration-none text-reset">{{ j.nombre_completo }}</a></td>
+      <td class="pos-chip">{{ j.get_posicion_display }}</td>
+      <td>{{ j.edad }} años</td>
+      <td>{{ j.altura_cm }} cm</td>
+      <td>{{ j.peso_kg|floatformat:1 }} kg</td>
+      <td>{{ j.get_pierna_buena_display }}</td>
+      <td class="text-end pe-3 text-nowrap">
+        <a href="{% url 'jugadoresapp:editar' j.pk %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{% url 'jugadoresapp:eliminar' j.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="text-center py-5">
+      <p class="mb-2 fw-bold">No hay jugadores con esos filtros.</p>
+      <a href="{% url 'jugadoresapp:crear' %}" class="btn btn-club btn-sm">Fichar el primero</a>
+    </td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+
+{% if pagina.has_other_pages %}
+<nav class="mt-3" aria-label="Paginación">
+  <ul class="pagination justify-content-center">
+    {% if pagina.has_previous %}<li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ pagina.previous_page_number }}">Anterior</a></li>{% endif %}
+    {% for n in pagina.paginator.page_range %}
+      <li class="page-item {% if n == pagina.number %}active{% endif %}"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ n }}">{{ n }}</a></li>
+    {% endfor %}
+    {% if pagina.has_next %}<li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ pagina.next_page_number }}">Siguiente</a></li>{% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

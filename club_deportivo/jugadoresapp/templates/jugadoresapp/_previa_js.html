@@ -1,0 +1,19 @@
+<script>
+(function () {
+  var g = function (id) { return document.getElementById(id); };
+  var num = g('id_dorsal'), nom = g('id_nombre'), ap = g('id_apellido'), pos = g('id_posicion');
+  function pintar() {
+    g('pv-num').textContent = num && num.value ? num.value : '00';
+    var n = ((nom && nom.value) + ' ' + (ap && ap.value)).trim();
+    g('pv-nombre').textContent = n || 'Nombre Apellido';
+    g('pv-pos').textContent = pos && pos.value ? pos.options[pos.selectedIndex].text : 'Posición';
+  }
+  [num, nom, ap, pos].forEach(function (c) { if (c) { c.addEventListener('input', pintar); c.addEventListener('change', pintar); } });
+  // marca en rojo los campos con error del servidor
+  document.querySelectorAll('.error-campo').forEach(function (e) {
+    var cont = e.closest('div[class^="col-"]'); var campo = cont && cont.querySelector('input, select');
+    if (campo) campo.classList.add('is-invalid');
+  });
+  pintar();
+})();
+</script>
