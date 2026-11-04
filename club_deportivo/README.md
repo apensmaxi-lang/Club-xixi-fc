@@ -1,60 +1,41 @@
-# Club Deportivo — Gestión de Jugadores (Django + MySQL/MariaDB)
+# Club Xixi FC — Django y MariaDB de XAMPP
 
-CRUD de jugadores con estos datos: **nombre, apellido, dorsal, edad, altura (cm), peso (kg), posición y pierna buena**.
+## Configuración comprobada
+Python 3.12, Django 5.0.14 y Django REST Framework 3.15.2 según las instrucciones del profesor. Conector PyMySQL 1.2.3 y MariaDB 10.4.32 de XAMPP.
+Base: `club_deportivo_db`, host `127.0.0.1`, puerto `3306`.
+El backend se llama `django.db.backends.mysql` también cuando el servidor es MariaDB.
+Django 5.0 admite MariaDB 10.4 directamente. Se retiraron los parches de versión y de INSERT RETURNING, y la alteración artificial de versión del conector. Las versiones se fijan para reproducir el entorno de la clase; no se presenta esta instalación como un despliegue público de producción.
 
-## Abrir en Visual Studio Code
-`Archivo > Abrir carpeta…` y elige la carpeta `club_deportivo` (la que contiene `manage.py`).
-Abre la terminal integrada (`Ctrl + ñ`) y sigue los pasos de abajo. También puedes ejecutar con F5 ("Django: runserver").
-
-## Conectar con XAMPP (MySQL)
-La conexión ya está configurada en `jugadores/settings.py` con los valores por defecto de XAMPP:
-base `club_deportivo`, usuario `root`, sin contraseña, host `127.0.0.1`, puerto `3306`.
-
-1. Abre el **XAMPP Control Panel** y pulsa **Start** en **MySQL** (Apache no es necesario, solo si quieres abrir phpMyAdmin).
-2. Abre http://localhost/phpmyadmin → pestaña **SQL** → pega el contenido de `crear_bd.sql` → **Continuar**
-   (o pestaña **Importar** y eliges el archivo). Debe aparecer la base `club_deportivo` en la izquierda.
-3. Abre la carpeta del proyecto en VS Code. En la terminal ejecuta `iniciar.bat`
-   (crea el entorno virtual, instala dependencias, crea las tablas, carga datos de ejemplo y arranca el servidor).
-4. Entra a http://127.0.0.1:8000/
-5. Para ver los datos: phpMyAdmin → `club_deportivo` → tabla `jugadoresapp_jugador` → **Examinar**.
-
-### Manual (sin el .bat)
+## Preparar y ejecutar (PowerShell, desde la raíz del repositorio)
+```powershell
+py -3.12 -m venv venv
+.\venv\Scripts\python.exe -m pip install -r club_deportivo\requirements.txt
+.\venv\Scripts\python.exe club_deportivo\manage.py migrate
+.\venv\Scripts\python.exe club_deportivo\manage.py runserver
 ```
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py makemigrations jugadoresapp
-python manage.py migrate
-python manage.py cargar_demo      # opcional
-python manage.py runserver
+Iniciar primero MariaDB en el panel XAMPP, donde el botón está rotulado MySQL.
+Solo en una instalación nueva, crear la base con `club_deportivo/crear_bd.sql`. No borrar ni recrear una base con datos.
+También se puede ejecutar `club_deportivo/iniciar.bat`: usa el entorno del repositorio y se detiene si las migraciones fallan. No carga jugadores demo ni genera migraciones automáticamente.
+Variables opcionales: DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT. Se leen del entorno; no se carga automáticamente un archivo .env.
+La clave de firma se genera una vez en `club_deportivo/.secret-key`, excluida de Git. No compartirla. Se puede sustituir con DJANGO_SECRET_KEY. Cambiarla invalida las sesiones y tokens existentes.
+
+## API
+Rutas: GET/POST `/api/jugadores/`; GET/PUT/DELETE `/api/jugadores/ID/`.
+Enviar `Authorization: Bearer TOKEN` y para POST/PUT `Content-Type: application/json`.
+El endpoint que entrega el token se incorpora con la rama de login, entregada aparte. Django REST Framework queda instalado y registrado según las instrucciones; los endpoints actuales se implementan con vistas Django y tokens firmados propios, no con JWT ni TokenAuthentication de DRF.
+PUT requiere todos los campos del jugador. Los errores de validación se devuelven en JSON.
+
+## Pruebas
+```powershell
+.\venv\Scripts\python.exe club_deportivo\manage.py test jugadoresapp.tests_api
 ```
+Django crea una base de pruebas separada; el usuario necesita permiso para crearla. Nunca configurar TEST.NAME igual a la base real.
+Tras integrar login: añadir `jugadoresapp.tests_auth` al comando.
+Para crear usuarios tras las migraciones: `python manage.py createsuperuser` desde club_deportivo y con el entorno activo.
 
-### Problemas frecuentes
-- **Can't connect to MySQL server**: MySQL no está iniciado en XAMPP, o usa otro puerto (míralo en el Control Panel; si es 3307, cambia `DB_PORT` en settings.py).
-- **Access denied for user 'root'**: tu MySQL tiene contraseña; ponla en `PASSWORD` de settings.py.
-- **Unknown database 'club_deportivo'**: falta ejecutar `crear_bd.sql`.
-- **MariaDB 10.5 or later is required**: XAMPP antiguo. Actualiza XAMPP o usa `pip install "Django==4.2.*"` (Python ≤ 3.12).
-- Sin XAMPP, para probar: `set USE_SQLITE=1` antes de migrar.
-
-> Si antes tenías una versión anterior con la tabla `jugadores_jugador`, bórrala (o borra y recrea la base) y elimina cualquier migración antigua dentro de `jugadoresapp/migrations/` (deja solo `__init__.py`).
-
-## Estructura
-Mismo esquema que el repo de referencia: un proyecto y una app con `manage.py`, `requirements.txt` y `.gitignore` en la raíz.
-- `jugadores/` proyecto Django (settings.py con la conexión a la BD, urls.py raíz, wsgi.py).
-- `jugadoresapp/` app: `models.py` (modelo `Jugador`), `forms.py` (crear/editar), `views.py` (CRUD), `urls.py`, `admin.py`.
-- `jugadoresapp/templates/jugadoresapp/` base, inicio, lista, detalle, crear, editar, eliminar.
-
-## CRUD
-| Acción | Ruta |
-|---|---|
-| Listar / buscar / filtrar / ordenar | `/jugadores/` |
-| Crear | `/jugadores/nuevo/` |
-| Ver detalle | `/jugadores/<id>/` |
-| Editar | `/jugadores/<id>/editar/` |
-| Eliminar (con confirmación por POST) | `/jugadores/<id>/eliminar/` |
-
-## Validaciones
-Todos los campos son obligatorios · nombre y apellido solo letras · dorsal 1–99 y único · edad 5–60 · altura 100–230 cm · peso 20–150 kg (admite un decimal) · posición y pierna buena (derecha / izquierda / ambidiestro) se eligen de una lista.
-
-## Ver el CRUD en la base de datos
-phpMyAdmin → `club_deportivo` → tabla `jugadoresapp_jugador`; refresca tras cada acción en la web.
+## Git y colaboración
+API: rama login/apirest. Login: rama feature/login en la copia del compañero.
+Acordar primero una base común con estos ajustes de configuración y la migración inicial.
+La API cambia jugadores/urls.py; el login cambia jugadoresapp/urls.py, views.py y base.html.
+api_auth.py se comparte idéntico en ambas entregas. Coordinar sus modificaciones.
+No subir venv, .secret-key, contraseñas ni bases SQLite. Revisar `git diff` y `git status` antes de cada commit.

@@ -3,9 +3,21 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-cambiar-esta-clave-en-produccion"
-DEBUG = True
-ALLOWED_HOSTS = []
+# Clave privada local persistente, excluida de Git. En un servidor usar DJANGO_SECRET_KEY.
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    from secrets import token_urlsafe
+    secret_path = BASE_DIR / ".secret-key"
+    try:
+        with secret_path.open("x", encoding="utf-8") as secret_file:
+            secret_file.write(token_urlsafe(64))
+    except FileExistsError:
+        pass
+    SECRET_KEY = secret_path.read_text(encoding="utf-8").strip()
+    if not SECRET_KEY:
+        raise ValueError("La clave privada local está vacía.")
+DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -14,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "jugadoresapp",
 ]
 
@@ -47,11 +60,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "jugadores.wsgi.application"
 
-# --- Base de datos: MySQL/MariaDB de XAMPP -----------------------------------
-# Valores por defecto de XAMPP: usuario root, sin contraseña, puerto 3306.
-# Si tu XAMPP es distinto, cámbialos aquí (o con variables de entorno DB_*).
-# La base se crea con el archivo crear_bd.sql (ver README).
-# Para probar sin XAMPP: define la variable de entorno USE_SQLITE=1
+# --- Base de datos: MySQL/MariaDB de XAMPP ----
 if os.environ.get("USE_SQLITE") == "1":
     DATABASES = {
         "default": {
@@ -63,12 +72,15 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.environ.get("DB_NAME", "club_deportivo"),
+            "NAME": os.environ.get("DB_NAME", "club_deportivo_db"),
             "USER": os.environ.get("DB_USER", "root"),
-            "PASSWORD": os.environ.get("DB_PASSWORD", ""),  # XAMPP: sin contraseña
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
             "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
             "PORT": os.environ.get("DB_PORT", "3306"),
-            "OPTIONS": {"charset": "utf8mb4"},
+            "OPTIONS": {
+                "charset": "utf8mb4",
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
         }
     }
 
