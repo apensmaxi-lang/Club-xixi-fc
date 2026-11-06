@@ -1,23 +1,16 @@
 @echo off
-REM Requisitos: XAMPP con MySQL iniciado y la base creada (crear_bd.sql).
+setlocal
 cd /d "%~dp0"
-
-if not exist venv (
-    echo Creando entorno virtual...
-    python -m venv venv
+set "PROJECT_PYTHON=%~dp0..\venv\Scripts\python.exe"
+if not exist "%PROJECT_PYTHON%" (
+    echo Falta el entorno virtual. Consulta README.md para crearlo.
+    exit /b 1
 )
-call venv\Scripts\activate
-
-echo Instalando dependencias...
-pip install -r requirements.txt
-
-echo Creando tablas en MySQL...
-python manage.py makemigrations jugadoresapp
-python manage.py migrate
-
-echo Cargando jugadores de ejemplo (opcional, no duplica)...
-python manage.py cargar_demo
-
-echo Abriendo el servidor en http://127.0.0.1:8000/
-python manage.py runserver
-pause
+echo Verificando MariaDB de XAMPP y migraciones...
+"%PROJECT_PYTHON%" manage.py migrate
+if errorlevel 1 (
+    echo Revisa que MariaDB este iniciado en XAMPP y que exista club_deportivo_db.
+    exit /b 1
+)
+"%PROJECT_PYTHON%" manage.py runserver
+endlocal
