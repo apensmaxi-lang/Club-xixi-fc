@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q
@@ -15,6 +16,7 @@ ORDEN_LINEAS = [
 ]
 
 
+@login_required(login_url="jugadoresapp:login")
 def inicio(request):
     resumen = Jugador.objects.aggregate(
         total=Count("id"),
@@ -48,6 +50,7 @@ ORDENES = {
 }
 
 
+@login_required(login_url="jugadoresapp:login")
 def lista(request):  # READ (listado + búsqueda + filtros + orden + paginación)
     jugadores = Jugador.objects.all()
     q = request.GET.get("q", "").strip()
@@ -88,11 +91,13 @@ def lista(request):  # READ (listado + búsqueda + filtros + orden + paginación
     return render(request, "jugadoresapp/lista.html", contexto)
 
 
+@login_required(login_url="jugadoresapp:login")
 def detalle(request, pk):  # READ (un registro)
     jugador = get_object_or_404(Jugador, pk=pk)
     return render(request, "jugadoresapp/detalle.html", {"jugador": jugador})
 
 
+@login_required(login_url="jugadoresapp:login")
 def crear(request):  # CREATE
     if request.method == "POST":
         form = JugadorCrearForm(request.POST)
@@ -105,6 +110,7 @@ def crear(request):  # CREATE
     return render(request, "jugadoresapp/crear.html", {"form": form})
 
 
+@login_required(login_url="jugadoresapp:login")
 def editar(request, pk):  # UPDATE
     jugador = get_object_or_404(Jugador, pk=pk)
     if request.method == "POST":
@@ -118,6 +124,7 @@ def editar(request, pk):  # UPDATE
     return render(request, "jugadoresapp/editar.html", {"form": form, "jugador": jugador})
 
 
+@login_required(login_url="jugadoresapp:login")
 def eliminar(request, pk):  # DELETE (con confirmación)
     jugador = get_object_or_404(Jugador, pk=pk)
     if request.method == "POST":
