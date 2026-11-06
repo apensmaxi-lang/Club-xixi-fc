@@ -21,9 +21,15 @@
     </button>
     <div class="collapse navbar-collapse" id="menu">
       <ul class="navbar-nav ms-auto gap-1">
+        {% if user.is_authenticated %}
         <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'inicio' %}activo{% endif %}" href="{% url 'jugadoresapp:inicio' %}">Alineación</a></li>
         <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'lista' %}activo{% endif %}" href="{% url 'jugadoresapp:lista' %}">Plantel</a></li>
         <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'crear' %}activo{% endif %}" href="{% url 'jugadoresapp:crear' %}">Fichar jugador</a></li>
+        <li class="nav-item"><span class="nav-link">{{ user.username }}</span></li>
+        <li class="nav-item"><form method="post" action="{% url 'jugadoresapp:logout' %}">{% csrf_token %}<button class="btn btn-outline-light" type="submit">Cerrar sesión</button></form></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'jugadoresapp:login' %}">Iniciar sesión</a></li>
+        {% endif %}
       </ul>
     </div>
   </div>
